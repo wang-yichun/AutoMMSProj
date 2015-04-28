@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# test.py
-# Auto Material Management System Ver1.0 (自动物料管理系统 v1.0)
+# minus.py
+# Auto Material Management System Ver1.2 (自动物料管理系统 v1.2)
 # Author: Wang-Yichun
 
 import xlrd
@@ -39,7 +39,7 @@ targetFile = output_path1 + '/' + out_backup_xls_name
 if not os.path.exists(targetFile):
 	open(targetFile, "wb").write(open(sourceFile, "rb").read())
 
-rbook = xlrd.open_workbook(in_xls_name,formatting_info=True)
+rbook = xlrd.open_workbook(in_xls_name,formatting_info=False)
 wbook = xlutils.copy.copy(rbook)
 wbook2 = xlwt.Workbook()
 
@@ -66,6 +66,7 @@ for sheet_index in range(rbook.nsheets):
 	for i in range(rsheet.ncols):
 		title_cell_value = rsheet.cell(title_row_idx, i).value
 		title_cell_ctype = rsheet.cell(title_row_idx, i).ctype
+		
 		if title_cell_value != '' and title_cell_ctype == xlrd.XL_CELL_TEXT:
 			
 			if curr_number_tag in title_cell_value:
@@ -80,6 +81,9 @@ for sheet_index in range(rbook.nsheets):
 
 	wsheet2_cur_row_idx = wsheet2_cur_row_idx + 1
 
+	if curr_col_idx == -1 or ndiff_col_idx == -1 or diff_col_idx == -1:
+		continue;
+		
 	#处理修改的行
 	
 	for i in range(title_row_idx + 1, rsheet.nrows):
@@ -88,15 +92,18 @@ for sheet_index in range(rbook.nsheets):
 		diff_cell = rsheet.cell(i, diff_col_idx)
 		
 		need_write = False
+		result_value = curr_cell.value
 		if ndiff_cell.value != '' and ndiff_cell.ctype == xlrd.XL_CELL_NUMBER:
-			result_value = curr_cell.value - ndiff_cell.value
+			result_value = result_value - ndiff_cell.value
 			need_write = True
 		if diff_cell.value != '' and diff_cell.ctype == xlrd.XL_CELL_NUMBER:
-			result_value = curr_cell.value + diff_cell.value
+			result_value = result_value + diff_cell.value
 			need_write = True
 		
 		if need_write == True:
 			update_number = update_number + 1
+			
+			print i,curr_col_idx
 			wsheet.write(i, curr_col_idx, result_value)
 			wsheet.write(i, ndiff_col_idx, '')
 			wsheet.write(i, diff_col_idx, '')
